@@ -197,6 +197,8 @@ window.addEventListener('scroll', function (e) {
         if (config.mobileMenuExpandableSubmenus) {
             wrapSubmenusIntoContainer(menuWrapper);
             initToggleSubmenu(menuWrapper);
+        } else {
+            setAriaForSubmenus(menuWrapper);
         }
 
         // Init button events
@@ -254,6 +256,8 @@ window.addEventListener('scroll', function (e) {
         if (config.mobileMenuExpandableSubmenus) {
             wrapSubmenusIntoContainer(menuWrapper);
             initToggleSubmenu(menuWrapper);
+        } else {
+            setAriaForSubmenus(menuWrapper);
         }
 
         // Menu events
@@ -279,6 +283,17 @@ window.addEventListener('scroll', function (e) {
             button.setAttribute(config.ariaButtonAttribute, button.classList.contains(config.openedMenuClass));
             document.documentElement.classList.toggle(config.noScrollClass);
         });
+    }
+
+    /**
+     * Set aria-hidden="false" for submenus
+     */
+    function setAriaForSubmenus (menuWrapper) {
+        var submenus = menuWrapper.querySelectorAll(config.submenuSelector);
+
+        for (var i = 0; i < submenus.length; i++) {
+            submenus[i].setAttribute('aria-hidden', false);
+        }
     }
 
     /**
@@ -504,4 +519,44 @@ window.addEventListener('scroll', function (e) {
 
         return !!popup;
     }
+})();
+
+// Responsive embeds script
+(function () {
+	let wrappers = document.querySelectorAll('.post__video, .post__iframe');
+
+	for (let i = 0; i < wrappers.length; i++) {
+		let embed = wrappers[i].querySelector('iframe, embed, video, object');
+
+		if (!embed) {
+			continue;
+		}
+
+        if (embed.getAttribute('data-responsive') === 'false') {
+            continue;
+        }
+
+		let w = embed.getAttribute('width');
+		let h = embed.getAttribute('height');
+		let ratio = false;
+
+		if (!w || !h) {
+			continue;
+		}
+		
+		if (w.indexOf('%') > -1 && h.indexOf('%') > -1) { // percentage mode
+			w = parseFloat(w.replace('%', ''));
+			h = parseFloat(h.replace('%', ''));
+			ratio = h / w;
+		} else if (w.indexOf('%') === -1 && h.indexOf('%') === -1) { // pixels mode
+			w = parseInt(w, 10);
+			h = parseInt(h, 10);
+			ratio = h / w;
+		}
+
+		if (ratio !== false) {
+			let ratioValue = (ratio * 100) + '%';
+			wrappers[i].setAttribute('style', '--embed-aspect-ratio:' + ratioValue);
+		}
+	}
 })();
